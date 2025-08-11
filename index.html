@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopnix — Onboarding Wizard</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root{ --accent: #ff7a00; }
+    body{ background:#f6f7fb; color:#222; font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+    .container{ max-width:1100px; }
+
+    /* Wizard layout */
+    .wizard{ display:flex; gap:1rem; padding:1.25rem; }
+    .steps{ width:280px; background:#fff; padding:1rem; border-radius:12px; box-shadow:0 6px 18px rgba(20,20,40,0.06); }
+    .step-item{ display:flex; gap:.75rem; align-items:center; padding:.6rem; border-radius:8px; cursor:pointer; }
+    .step-item.active{ background: linear-gradient(90deg, rgba(255,122,0,0.06), rgba(255,122,0,0.02)); border-left:4px solid var(--accent); }
+
+    .panel{ flex:1; background:#fff; padding:1.25rem; border-radius:12px; box-shadow:0 6px 18px rgba(20,20,40,0.06); }
+
+    /* Theme swatches */
+    .theme-swatch{ width:56px; height:56px; border-radius:10px; display:inline-block; margin-right:.6rem; cursor:pointer; border:2px solid transparent; }
+    .theme-swatch.selected{ transform:scale(1.03); box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+    .theme-orange{ background:#ff7a00; }
+    .theme-turquoise{ background:#1abc9c; }
+    .theme-blue{ background:#007bff; }
+
+    /* tags */
+    .tag{ display:inline-flex; align-items:center; gap:.4rem; background:#f1f3f5; padding:.35rem .5rem; border-radius:999px; margin:.25rem; }
+
+    /* pricing scroll area */
+    .pricing-list{ max-height:360px; overflow:auto; padding:1rem; border-radius:8px; border:1px solid #eef0f3; }
+    .pricing-item{ padding:.75rem; border-bottom:1px solid #f1f2f5; }
+    .pricing-item:last-child{ border-bottom:none; }
+
+    /* custom scrollbar (webkit) */
+    .pricing-list::-webkit-scrollbar{ width:8px; }
+    .pricing-list::-webkit-scrollbar-thumb{ background: rgba(0,0,0,0.12); border-radius:8px; }
+
+    /* responsive */
+    @media (max-width: 767px){ .wizard{ flex-direction:column; } .steps{ width:100%; order:2; } .panel{ order:1; } }
+  </style>
+</head>
+<body>
+  <div class="container my-5">
+    <h2 class="mb-3">Shopnix — Onboarding Wizard</h2>
+
+    <div class="wizard">
+      <!-- Sidebar steps -->
+      <aside class="steps">
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <strong>Onboarding</strong>
+          <small class="text-muted">3 steps</small>
+        </div>
+        <div id="stepList">
+          <div class="step-item active" data-step="1"><span class="badge bg-light text-dark me-2">1</span>
+            <div>
+              <div class="fw-semibold">Choose Theme</div>
+              <small class="text-muted">Pick primary color</small>
+            </div>
+          </div>
+          <div class="step-item" data-step="2"><span class="badge bg-light text-dark me-2">2</span>
+            <div>
+              <div class="fw-semibold">Products</div>
+              <small class="text-muted">Add types & categories</small>
+            </div>
+          </div>
+          <div class="step-item" data-step="3"><span class="badge bg-light text-dark me-2">3</span>
+            <div>
+              <div class="fw-semibold">Pricing</div>
+              <small class="text-muted">Set pricing & info</small>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main panel -->
+      <section class="panel">
+        <!-- STEP 1 -->
+        <div id="step1" class="step-content">
+          <h4>Step 1 — Choose Theme</h4>
+          <p class="text-muted">Primary color choices: orange, turquoise or blue. Click a swatch to preview and set brand name.</p>
+
+          <div class="d-flex align-items-center mb-4">
+            <div class="theme-swatch theme-orange selected" data-color="#ff7a00" title="Orange"></div>
+            <div class="theme-swatch theme-turquoise" data-color="#1abc9c" title="Turquoise"></div>
+            <div class="theme-swatch theme-blue" data-color="#007bff" title="Blue"></div>
+          </div>
+
+          <div class="mb-4">
+            <label for="brandName" class="form-label">Brand / Shop Name</label>
+            <input id="brandName" class="form-control" placeholder="e.g., Cloudnix Shop">
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-outline-secondary btn-prev" disabled>Previous</button>
+            <button class="btn btn-primary btn-next" data-next="2">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div id="step2" class="step-content d-none">
+          <h4>Step 2 — Product types & categories</h4>
+          <p class="text-muted">Add product types and categories. Use the + buttons to add chips. Remove by clicking ×.</p>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Product Types</label>
+              <div id="productTypes" class="mb-2"></div>
+              <div class="input-group">
+                <input id="productTypeInput" class="form-control" placeholder="Add product type and press enter">
+                <button id="addTypeBtn" class="btn btn-outline-secondary">Add</button>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Categories</label>
+              <div id="categories" class="mb-2"></div>
+              <div class="input-group">
+                <input id="categoryInput" class="form-control" placeholder="Add category and press enter">
+                <button id="addCatBtn" class="btn btn-outline-secondary">Add</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-check form-switch mb-3">
+            <input class="form-check-input" type="checkbox" id="showAdvanced">
+            <label class="form-check-label" for="showAdvanced">Show advanced options</label>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button class="btn btn-outline-secondary btn-prev" data-prev="1">Previous</button>
+            <button class="btn btn-primary btn-next" data-next="3">Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div id="step3" class="step-content d-none">
+          <h4>Step 3 — Pricing & additional info</h4>
+          <p class="text-muted">Scroll the pricing list. Add pricing tiers below.</p>
+
+          <div class="row">
+            <div class="col-lg-8">
+              <div class="pricing-list mb-3" id="pricingList" tabindex="0" aria-label="Pricing options">
+                <!-- pricing items will be appended here -->
+              </div>
+
+              <form id="pricingForm" class="row g-2">
+                <div class="col-md-6">
+                  <input id="tierName" class="form-control" placeholder="Tier name e.g., Standard">
+                </div>
+                <div class="col-md-4">
+                  <input id="tierPrice" class="form-control" placeholder="Price e.g., 199">
+                </div>
+                <div class="col-md-2 d-grid">
+                  <button class="btn btn-outline-secondary" id="addPricingBtn" type="button">Add</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="col-lg-4">
+              <div class="p-3 border rounded sticky-top" style="top:1rem;">
+                <h6>Additional Information</h6>
+                <p class="small text-muted">Provide PPK, shipping rules, and return policies here. Keep it concise.</p>
+                <ul class="small">
+                  <li>PPK format: PROD-XXXX</li>
+                  <li>Free shipping over ₹999</li>
+                  <li>14-day returns</li>
+                </ul>
+                <div class="mt-2">
+                  <label class="form-label small">Notes</label>
+                  <textarea id="notes" class="form-control" rows="4" placeholder="Any notes..."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-outline-secondary btn-prev" data-prev="2">Previous</button>
+            <button class="btn btn-success" id="finishBtn">Finish</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="resultToast" class="position-fixed bottom-0 end-0 p-3" style="z-index:1050"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function($){
+      const accentVar = '--accent';
+      function setAccent(color){
+        document.documentElement.style.setProperty(accentVar, color);
+        // style primary buttons subtly
+        document.querySelectorAll('.btn-primary').forEach(function(el){ el.style.backgroundColor = color; el.style.borderColor = color; });
+      }
+
+      // initial accent
+      setAccent($('.theme-swatch.selected').data('color'));
+
+      // theme click
+      $('.theme-swatch').on('click', function(){
+        $('.theme-swatch').removeClass('selected');
+        $(this).addClass('selected');
+        setAccent($(this).data('color'));
+      });
+
+      // step navigation
+      function showStep(n){
+        $('.step-content').addClass('d-none');
+        $('#step'+n).removeClass('d-none');
+        $('.step-item').removeClass('active');
+        $('.step-item[data-step="'+n+'"]').addClass('active');
+        $('.btn-prev').prop('disabled', false);
+        if(n==1) $('.btn-prev').prop('disabled', true);
+        $('#step'+n+' input:visible:first').focus();
+      }
+
+      $('.btn-next').on('click', function(){ showStep($(this).data('next')); });
+      $('.btn-prev').on('click', function(){ const p = $(this).data('prev') || (parseInt($('.step-item.active').data('step'))-1); showStep(p); });
+      $('.step-item').on('click', function(){ showStep($(this).data('step')); });
+
+      // tags (product types / categories)
+      function makeTag(text, container){
+        const id = 't'+Math.random().toString(36).slice(2,8);
+        const $tag = $('<span/>',{class:'tag', 'data-id':id}).text(text);
+        const $btn = $('<button/>',{type:'button', class:'btn-close btn-close-white ms-2', style:'background:transparent;opacity:.6'}).attr('aria-label','remove').on('click', function(){ $tag.remove(); });
+        $tag.append($btn);
+        $(container).append($tag);
+      }
+
+      $('#addTypeBtn').on('click', function(){ const v = $('#productTypeInput').val().trim(); if(v){ makeTag(v,'#productTypes'); $('#productTypeInput').val(''); } });
+      $('#addCatBtn').on('click', function(){ const v = $('#categoryInput').val().trim(); if(v){ makeTag(v,'#categories'); $('#categoryInput').val(''); } });
+      $('#productTypeInput, #categoryInput').on('keypress', function(e){ if(e.which==13){ e.preventDefault(); $(this).next().click(); } });
+
+      // pricing
+      function addPricingItem(name, price){
+        const $item = $('<div/>',{class:'pricing-item d-flex justify-content-between align-items-center'});
+        const left = $('<div/>').append($('<strong>').text(name)).append($('<div>').addClass('small text-muted').text('Description or features...'));
+        const right = $('<div/>').append($('<span>').addClass('me-2').text('₹'+price)).append($('<button/>',{class:'btn btn-sm btn-outline-danger'}).text('Remove').on('click', function(){ $item.remove(); }));
+        $item.append(left, right);
+        $('#pricingList').append($item);
+        $('#pricingList').scrollTop($('#pricingList')[0].scrollHeight);
+      }
+
+      $('#addPricingBtn').on('click', function(){ const n = $('#tierName').val().trim(); const p = $('#tierPrice').val().trim(); if(n && p){ addPricingItem(n,p); $('#tierName,#tierPrice').val(''); } });
+
+      // finish
+      $('#finishBtn').on('click', function(){
+        const data = {
+          theme: $('.theme-swatch.selected').attr('title'),
+          brand: $('#brandName').val(),
+          productTypes: $('#productTypes .tag').map(function(){ return $(this).clone().children().remove().end().text().trim(); }).get(),
+          categories: $('#categories .tag').map(function(){ return $(this).clone().children().remove().end().text().trim(); }).get(),
+          pricing: $('#pricingList .pricing-item').map(function(){ return {name: $(this).find('strong').text(), price: $(this).find('span').first().text() }; }).get(),
+          notes: $('#notes').val()
+        };
+
+        if(!data.brand){ alert('Please enter brand/shop name'); showStep(1); return; }
+
+        const toastHtml = '<div class="toast align-items-center text-bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true"><div class="d-flex"><div class="toast-body">Onboarding Complete — '+data.brand+' created.</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div></div>';
+        $('#resultToast').html(toastHtml);
+        console.log('onboarding data', data);
+      });
+
+      // defaults
+      addPricingItem('Starter','99');
+      addPricingItem('Standard','199');
+      addPricingItem('Premium','499');
+
+    })(jQuery);
+  </script>
+</body>
+</html>
